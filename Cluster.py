@@ -27,6 +27,9 @@ class Cluster:
       self.yhi = self.y.max()
       self.zlo = self.z.min()
       self.zhi = self.z.max()
+      self.lx = self.xhi-self.xlo
+      self.ly = self.yhi-self.ylo
+      self.lz = self.zhi-self.zlo
 
    def InitList(self):
       print "Init list"
@@ -59,6 +62,31 @@ class Cluster:
             
             if i == j:
                break
+
+   def CoordinateToCell(self, x, y, z):
+      return int( numpy.floor (x*self.CellLengthI[X]) + numpy.floor (y*self.CellLengthI[Y])*self.NCellSide[X] + numpy.floor (z*self.CellLengthI[Z])*self.NCellSide[X]*self.NCellSide[Y]   )
+
+
+   def BuildLinkedlist(self):
+      CellSize = self.RcNeighbor
+      
+      ncellx = int (numpy.ceil (self.lx / CellSize))
+      ncelly = int (numpy.ceil (self.ly / CellSize))
+      ncellz = int (numpy.ceil (self.lz / CellSize))
+      ncell = ncellx+ncelly+ncellz
+
+      CellLengthx = self.lx / ncellx
+      CellLengthy = self.ly / ncelly
+      CellLengthz = self.lz / ncellz
+
+      CellLengthIx = 1./CellLengthx
+      CellLengthIy = 1./CellLengthy
+      CellLengthIz = 1./CellLengthz
+
+      for i in range (0, self.natoms):
+
+         LinkedListInsert (i, CellList + CoordinateToCell (x[i], y[i], z[i]) );
+
 
    def ClustereVerletlist(self):
       print "Clustere"
