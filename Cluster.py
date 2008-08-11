@@ -69,10 +69,21 @@ class Cluster:
          j = i
 
          while True:
+            # sum overall neighbor cells
             for mx in [-1, 0, 1]:
                x = self.x[j] + mx*RcCluster
                if x < self.xlo or x > self.xhi:
                   continue
+               for my in [-1, 0, 1]:
+                  y = self.y[j] + my*RcCluster
+                  if y < self.ylo or y > self.yhi:
+                     continue
+                  for mz in [-1, 0, 1]:
+                     z = self.z[j] + mz*RcCluster
+                     if z < self.zlo or z > self.zhi:
+                        continue
+
+                     # sum overall particles in cell
 
             j = self.List[j]
 
@@ -89,4 +100,3 @@ class Cluster:
 
 
 c = Cluster(3.615, filename)
-c.Clustere()
