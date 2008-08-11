@@ -112,7 +112,7 @@ class Cluster:
 
       for i in range (0, self.natoms):
          if i % 10000 == 0:
-            print i
+            print i,
 #         print i,self.x[i],self.y[i],self.z[i],self.CoordinateToCell (self.x[i], self.y[i], self.z[i])
          self.LinkedList[self.CoordinateToCell (self.x[i], self.y[i], self.z[i])].append (i) # = [i, self.LinkedList[self.CoordinateToCell (self.x[i], self.y[i], self.z[i])]]
 
@@ -128,20 +128,22 @@ class Cluster:
          while True:
             # sum overall neighbor cells
             for mx in [-1, 0, 1]:
-               x = self.x[j] + mx*RcCluster
+               x = self.x[j] + mx*self.RcCluster
                if x < self.xlo or x > self.xhi:
                   continue
                for my in [-1, 0, 1]:
-                  y = self.y[j] + my*RcCluster
+                  y = self.y[j] + my*self.RcCluster
                   if y < self.ylo or y > self.yhi:
                      continue
                   for mz in [-1, 0, 1]:
-                     z = self.z[j] + mz*RcCluster
+                     z = self.z[j] + mz*self.RcCluster
                      if z < self.zlo or z > self.zhi:
                         continue
 
                      # sum overall particles in cell
                      for k in self.LinkedList[self.CoordinateToCell (self.x[j], self.y[j], self.z[j])]:
+                        if k % 10000 == 0:
+                           print k,
                         RSq = SqDist(self.x[j], self.x[k]) + SqDist(self.y[j], self.y[k]) + SqDist(self.z[j], self.z[k])
                         if RSq <= self.RcClusterSq:
                             Lk = self.List[k]
