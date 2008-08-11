@@ -141,11 +141,37 @@ class Cluster:
                         continue
 
                      # sum overall particles in cell
+                     for k in self.LinkedList[self.CoordinateToCell (self.x[j], self.y[j], self.z[j])]:
+                        RSq = SqDist(self.x[j], self.x[k]) + SqDist(self.y[j], self.y[k]) + SqDist(self.z[j], self.z[k])
+                        if RSq <= self.RcClusterSq:
+                            Lk = self.List[k]
+                            self.List[k] = self.List[j]
+                            self.List[j] = Lk
 
             j = self.List[j]
 
             if i == j:
                break
+
+   def Spectrum(self):
+      self.Spectrum = numpy.array([0 for i in range(0, self.natoms+1) ])
+      for i in range (0, self.natoms):
+         if self.List[i] > 0:
+            size = 1
+            j = self.List[i]
+            self.List[i] = -1
+            while True:
+               size += 1
+               k = self.List[j]
+               self.List[j] = -1
+               j = k
+               if j == i:
+                  break
+            self.Spectrum[size] += 1
+      for i in range (0, self.natoms+1):
+         if self.Spectrum > 0:
+            print i, self.Spectrum
+
 
    def __init__(self, RcCluster, filename):
       self.RcCluster = RcCluster
@@ -156,6 +182,8 @@ class Cluster:
       self.ShiftPositions ()
       self.InitList ()
       self.BuildLinkedlist ()
+      self.ClustereVerletlist()
+      self.Spectrum ()
 
 
 c = Cluster(3.615, filename)
