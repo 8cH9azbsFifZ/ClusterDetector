@@ -614,8 +614,8 @@ void ReadHDF (char *filename, unsigned int *n, float **x, float **y, float **z) 
    //for (i = 0; i < nfields; i++)
    //   printf ("%f ", dst_buf[i]);
    hid_t x1 = H5Tcreate (H5T_COMPOUND, sizeof (float));
-   H5Tinsert (x1, "x", HOFFSET(x1,
-   H5Dread (particles,  
+//   H5Tinsert (x1, "x", HOFFSET(x1,
+//   H5Dread (particles,  
    
    //H5TBread_table (hdf, "/Particles/All", type_size[0], field_offsets, field_sizes, dst_buf);
 
@@ -651,7 +651,8 @@ int main (int argc, char *argv[]) {
    if (!FileFlag)
       ReadStdin (&n, &x, &y, &z);
    else
-      ReadHDF (*filename, &n, &x, &y, &z);
+      exit (0);
+      //ReadHDF (*filename, &n, &x, &y, &z);
    
    DetermineBoxLength (n, x, y, z, &(Length[X]), &(Length[Y]), &(Length[Z]));
 
