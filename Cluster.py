@@ -19,11 +19,20 @@ class Cluster:
       self.natoms = numpy.size (self.x)
       print self.natoms,"particles"
 
+   def DetermineExtrema(self):
+      print "Determining extrema"
+      self.xlo = self.x.min()
+      self.xhi = self.x.max()
+      self.ylo = self.y.min()
+      self.yhi = self.y.max()
+      self.zlo = self.z.min()
+      self.zhi = self.z.max()
+
    def InitList(self):
       print "Init list"
       self.List = numpy.array([i for i in range(0, self.natoms) ])
 
-   def Clustere():
+   def ClustereStraight(self):
       print "Clustere"
       for i in range(0, self.natoms-1):
          if i != self.List[i]:
@@ -51,7 +60,33 @@ class Cluster:
             if i == j:
                break
 
+   def ClustereVerletlist(self):
+      print "Clustere"
+      for i in range (0, self.natoms):
+         if i != self.List[i]:
+            continue
 
-c = Cluster()
-c.ReadFile (filename)
-c.InitList()
+         j = i
+
+         while True:
+            for mx in [-1, 0, 1]:
+               x = self.x[j] + mx*RcCluster
+               if x < self.xlo or x > self.xhi:
+                  continue
+
+            j = self.List[j]
+
+            if i == j:
+               break
+
+   def __init__(self, RcCluster, filename):
+      self.RcCluster = RcCluster
+      self.RcClusterSq = RcCluster*RcCluster
+
+      self.ReadFile (filename)
+      self.DetermineExtrema ()
+      self.InitList ()
+
+
+c = Cluster(3.615, filename)
+c.Clustere()
