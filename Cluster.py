@@ -73,7 +73,10 @@ class Cluster:
       self.ncellx = int (numpy.ceil (self.lx / CellSize))
       self.ncelly = int (numpy.ceil (self.ly / CellSize))
       self.ncellz = int (numpy.ceil (self.lz / CellSize))
+
       self.ncell = self.ncellx + self.ncelly + self.ncellz
+      list = []
+      self.LinkedList = [list for i in range(0, self.ncell) ]
 
       self.CellLengthx = self.lx / self.ncellx
       self.CellLengthy = self.ly / self.ncelly
@@ -83,9 +86,8 @@ class Cluster:
       self.CellLengthIy = 1./self.CellLengthy
       self.CellLengthIz = 1./selfCellLengthz
 
-      for i in range (0, self.natoms):
-
-         LinkedListInsert (i, CellList + CoordinateToCell (x[i], y[i], z[i]) );
+#      for i in range (0, self.natoms):
+#         LinkedListInsert (i, CellList + CoordinateToCell (x[i], y[i], z[i]) );
 
 
    def ClustereVerletlist(self):
@@ -125,6 +127,7 @@ class Cluster:
       self.ReadFile (filename)
       self.DetermineExtrema ()
       self.InitList ()
+      self.BuildLinkedlist ()
 
 
 c = Cluster(3.615, filename)
