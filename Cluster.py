@@ -4,23 +4,25 @@ import tables, numpy
 
 filename = sys.argv[1]
 
-h1 = tables.openFile(filename)
-particles = h1.root.Particles.All
 
-[x, y, z] = [particles.read()["x"], particles.read()["y"], particles.read()["z"]]
-natoms = numpy.size (x)
-print natoms
 
 def SqDist(a,b):
    return (a-b)**2
 
 class Cluster:
+   def ReadFile(self, filename):
+      print "Read file", filename
+      self.filename = filename
+      self.h1 = tables.openFile (self.filename)
+      particles = self.h1.root.Particles.All
+      [self.x, self.y, self.z] = [particles.read()["x"], particles.read()["y"], particles.read()["z"]]
+      self.natoms = numpy.size (self.x)
+
    def InitList(self):
       print "Init list"
       self.List = numpy.array ((self.natoms,1))
       for i in range(0,natoms):
          self.List[i] = i
-
 
    def Clustere():
       print "Clustere"
@@ -49,4 +51,9 @@ class Cluster:
             
             if i == j:
                break
+
+
+c = Cluster()
+c.ReadFile (filename)
+c.InitList()
 
