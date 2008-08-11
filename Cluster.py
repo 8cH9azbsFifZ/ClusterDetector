@@ -64,17 +64,20 @@ class Cluster:
                break
 
    def CoordinateToCell(self, x, y, z):
-      return int( numpy.floor (x*self.CellLengthIx) + numpy.floor (y*self.CellLengthIy)*self.ncellx + numpy.floor (z*self.CellLengthIz)*selfncellx*self.ncelly )
+      return int( numpy.floor (x*self.CellLengthIx) + numpy.floor (y*self.CellLengthIy)*self.ncellx + numpy.floor (z*self.CellLengthIz)*self.ncellx*self.ncelly )
 
 
    def BuildLinkedlist(self):
-      CellSize = self.RcNeighbor
+      print "Build linked list"
+      CellSize = self.RcCluster
       
       self.ncellx = int (numpy.ceil (self.lx / CellSize))
       self.ncelly = int (numpy.ceil (self.ly / CellSize))
       self.ncellz = int (numpy.ceil (self.lz / CellSize))
 
       self.ncell = self.ncellx + self.ncelly + self.ncellz
+      print "ncells:",self.ncellx,self.ncelly,self.ncellz,self.ncell
+
       list = []
       self.LinkedList = [list for i in range(0, self.ncell) ]
 
@@ -84,10 +87,12 @@ class Cluster:
 
       self.CellLengthIx = 1./self.CellLengthx
       self.CellLengthIy = 1./self.CellLengthy
-      self.CellLengthIz = 1./selfCellLengthz
+      self.CellLengthIz = 1./self.CellLengthz
+      print "cell length:",self.CellLengthx,self.CellLengthy,self.CellLengthz,self.CellLengthIx,self.CellLengthIy,self.CellLengthIz
 
-#      for i in range (0, self.natoms):
-#         LinkedListInsert (i, CellList + CoordinateToCell (x[i], y[i], z[i]) );
+      for i in range (0, self.natoms):
+         print i,self.x[i],self.y[i],self.z[i],self.CoordinateToCell (self.x[i], self.y[i], self.z[i])
+         self.LinkedList[self.CoordinateToCell (self.x[i], self.y[i], self.z[i])] = [i, self.LinkedList[self.CoordinateToCell (self.x[i], self.y[i], self.z[i])]]
 
 
    def ClustereVerletlist(self):
