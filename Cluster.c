@@ -27,6 +27,7 @@
 #include <unistd.h>
 #include <stdarg.h>
 #include <string.h>
+#include <string.h>
 
 #include "H5LT.h"
 #include "H5TA.h"
@@ -577,14 +578,15 @@ void ReadFile (char *filename, unsigned int *n, float **x, float **y, float **z)
 
 void ReadHDF (char *filename, unsigned int *n, float **x, float **y, float **z) {
    llog ("\nReading hdf file %s", filename);
+   char *src = "/Particles/All";
    hid_t hdf = H5Fopen (filename, H5F_ACC_RDONLY, H5P_DEFAULT);
-   hid_t particles = H5Dopen (hdf, "/Particles/All");
+   hid_t particles = H5Dopen (hdf, src);
    hid_t type = H5Dget_type (particles);
    hid_t size = H5Dget_space (particles);
    hid_t plist = H5Dget_create_plist (particles);
    
    hsize_t nfields, nrecords;
-   H5TBget_table_info ( hdf, "/Particles/All", &nfields, &nrecords );
+   H5TBget_table_info ( hdf, src, &nfields, &nrecords );
    llog ("\thas %d fields with %d records\n", nfields, nrecords);
 
    char **field_names = (char **)calloc (nfields, sizeof (char*));
@@ -596,20 +598,36 @@ void ReadHDF (char *filename, unsigned int *n, float **x, float **y, float **z) 
           *field_offsets = (size_t *)calloc (nfields, sizeof (size_t)),
           *type_size = (size_t *)calloc (nfields, sizeof (size_t));
 
-   H5TBget_field_info (hdf, "/Particles/All", field_names, field_sizes, field_offsets, type_size);
+   H5TBget_field_info (hdf, src, field_names, field_sizes, field_offsets, type_size);
    for (i = 0; i < nfields; i++)
       llog ("\t-> %s {%d}\n", field_names[i], field_sizes[i], field_offsets[i], type_size[i]);
   
    size_t total = 0;
    for (i = 0; i < nfields; i++)
       total += field_sizes[i];
-   llog ("\ntotal size:%d", total);
+   llog ("\ntotal size:%d\n", total);
 
-   void *dst_buf = calloc (1, total);
+   void *dst_buf = NULL;//calloc (10, total);
    
    hsize_t start = 0, nn = 1;
-   H5TBread_records (hdf, "/Particles/All", start, nn, type_size[0], field_offsets, field_sizes, dst_buf);
+   char *field = "x";
+   int fidx = -1;
+   for (i = 0; i < nfields; i++) {
+      if (strcmp (field_names[i], field) == 0) {
+         fidx = i;
+      }
+   }
+//   H5TBread_records (hdf, src, start, nn, type_size[0], field_offsets, field_sizes, dst_buf);
+   dst_buf = calloc (nn, sizeof(float)); 
+   H5TBread_fields_name (hdf, src, field, start, 0, type_size[0],  field_offsets, field_sizes, dst_buf);
 
+   void *ptr = dst_buf;
+   for (i = 0; i < fidx; i++)
+      ptr += field_sizes[i];
+
+   float *variable1 = (float *) ptr;
+
+   llog ("\ndone\n");
    //printf ("\nok data:\n");
    //for (i = 0; i < nfields; i++)
    //   printf ("%f ", dst_buf[i]);
@@ -617,9 +635,9 @@ void ReadHDF (char *filename, unsigned int *n, float **x, float **y, float **z) 
 //   H5Tinsert (x1, "x", HOFFSET(x1,
 //   H5Dread (particles,  
    
-   //H5TBread_table (hdf, "/Particles/All", type_size[0], field_offsets, field_sizes, dst_buf);
+//   H5TBread_table (hdf, "/Particles/All", type_size[0], field_offsets, field_sizes, dst_buf);
 
-   //HD5read (particles, 
+//   HD5read (particles, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, dst_buf);
    
    H5Dclose (particles);
    H5Fclose (hdf);
@@ -651,8 +669,7 @@ int main (int argc, char *argv[]) {
    if (!FileFlag)
       ReadStdin (&n, &x, &y, &z);
    else
-      exit (0);
-      //ReadHDF (*filename, &n, &x, &y, &z);
+      ReadHDF (*filename, &n, &x, &y, &z);
    
    DetermineBoxLength (n, x, y, z, &(Length[X]), &(Length[Y]), &(Length[Z]));
 
