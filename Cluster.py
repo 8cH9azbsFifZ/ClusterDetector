@@ -17,12 +17,11 @@ class Cluster:
       particles = self.h1.root.Particles.All
       [self.x, self.y, self.z] = [particles.read()["x"], particles.read()["y"], particles.read()["z"]]
       self.natoms = numpy.size (self.x)
+      print self.natoms,"particles"
 
    def InitList(self):
       print "Init list"
-      self.List = numpy.array ((self.natoms,1))
-      for i in range(0,natoms):
-         self.List[i] = i
+      self.List = numpy.array([i for i in range(0, self.natoms) ])
 
    def Clustere():
       print "Clustere"
@@ -56,4 +55,3 @@ class Cluster:
 c = Cluster()
 c.ReadFile (filename)
 c.InitList()
-
