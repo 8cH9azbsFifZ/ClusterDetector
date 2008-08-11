@@ -64,24 +64,24 @@ class Cluster:
                break
 
    def CoordinateToCell(self, x, y, z):
-      return int( numpy.floor (x*self.CellLengthI[X]) + numpy.floor (y*self.CellLengthI[Y])*self.NCellSide[X] + numpy.floor (z*self.CellLengthI[Z])*self.NCellSide[X]*self.NCellSide[Y]   )
+      return int( numpy.floor (x*self.CellLengthIx) + numpy.floor (y*self.CellLengthIy)*self.ncellx + numpy.floor (z*self.CellLengthIz)*selfncellx*self.ncelly )
 
 
    def BuildLinkedlist(self):
       CellSize = self.RcNeighbor
       
-      ncellx = int (numpy.ceil (self.lx / CellSize))
-      ncelly = int (numpy.ceil (self.ly / CellSize))
-      ncellz = int (numpy.ceil (self.lz / CellSize))
-      ncell = ncellx+ncelly+ncellz
+      self.ncellx = int (numpy.ceil (self.lx / CellSize))
+      self.ncelly = int (numpy.ceil (self.ly / CellSize))
+      self.ncellz = int (numpy.ceil (self.lz / CellSize))
+      self.ncell = self.ncellx + self.ncelly + self.ncellz
 
-      CellLengthx = self.lx / ncellx
-      CellLengthy = self.ly / ncelly
-      CellLengthz = self.lz / ncellz
+      self.CellLengthx = self.lx / self.ncellx
+      self.CellLengthy = self.ly / self.ncelly
+      self.CellLengthz = self.lz / self.ncellz
 
-      CellLengthIx = 1./CellLengthx
-      CellLengthIy = 1./CellLengthy
-      CellLengthIz = 1./CellLengthz
+      self.CellLengthIx = 1./self.CellLengthx
+      self.CellLengthIy = 1./self.CellLengthy
+      self.CellLengthIz = 1./selfCellLengthz
 
       for i in range (0, self.natoms):
 
