@@ -31,6 +31,26 @@ class Cluster:
       self.ly = self.yhi-self.ylo
       self.lz = self.zhi-self.zlo
 
+   def ShiftPositions(self):
+      print "Shifting positions"
+      if self.xlo < 0:
+         self.xhi -= self.xlo
+         for i in range(0, self.natoms):
+            self.x[i] -= self.xlo
+         self.xlo = 0.
+
+      if self.ylo < 0:
+         self.yhi -= self.ylo
+         for i in range(0, self.natoms):
+            self.y[i] -= self.ylo
+         self.ylo = 0.
+
+      if self.zlo < 0:
+         self.zhi -= self.zlo
+         for i in range(0, self.natoms):
+            self.z[i] -= self.zlo
+         self.zlo = 0.
+
    def InitList(self):
       print "Init list"
       self.List = numpy.array([i for i in range(0, self.natoms) ])
@@ -131,6 +151,7 @@ class Cluster:
 
       self.ReadFile (filename)
       self.DetermineExtrema ()
+      self.ShiftPosition ()
       self.InitList ()
       self.BuildLinkedlist ()
 
