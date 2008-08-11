@@ -84,7 +84,7 @@ class Cluster:
                break
 
    def CoordinateToCell(self, x, y, z):
-      return int( numpy.floor (x*self.CellLengthIx) + numpy.floor (y*self.CellLengthIy)*self.ncellx + numpy.floor (z*self.CellLengthIz)*self.ncellx*self.ncelly )
+      return int( min(numpy.floor (x*self.CellLengthIx),self.ncellx) + min(numpy.floor (y*self.CellLengthIy)*self.ncellx, self.ncelly) + min(numpy.floor (z*self.CellLengthIz)*self.ncellx*self.ncelly,self.ncellz) )
 
 
    def BuildLinkedlist(self):
@@ -95,11 +95,11 @@ class Cluster:
       self.ncelly = int (numpy.ceil (self.ly / CellSize))
       self.ncellz = int (numpy.ceil (self.lz / CellSize))
 
-      self.ncell = self.ncellx + self.ncelly + self.ncellz
+      self.ncell = self.ncellx * self.ncelly * self.ncellz
       print "ncells:",self.ncellx,self.ncelly,self.ncellz,self.ncell
 
       list = []
-      self.LinkedList = [list for i in range(0, self.ncell) ]
+      self.LinkedList = [list for i in range(0, self.ncell+1) ]
 
       self.CellLengthx = self.lx / self.ncellx
       self.CellLengthy = self.ly / self.ncelly
@@ -111,8 +111,10 @@ class Cluster:
       print "cell length:",self.CellLengthx,self.CellLengthy,self.CellLengthz,self.CellLengthIx,self.CellLengthIy,self.CellLengthIz
 
       for i in range (0, self.natoms):
-         print i,self.x[i],self.y[i],self.z[i],self.CoordinateToCell (self.x[i], self.y[i], self.z[i])
-         self.LinkedList[self.CoordinateToCell (self.x[i], self.y[i], self.z[i])] = [i, self.LinkedList[self.CoordinateToCell (self.x[i], self.y[i], self.z[i])]]
+         if i % 10000 == 0:
+            print i
+#         print i,self.x[i],self.y[i],self.z[i],self.CoordinateToCell (self.x[i], self.y[i], self.z[i])
+         self.LinkedList[self.CoordinateToCell (self.x[i], self.y[i], self.z[i])].append (i) # = [i, self.LinkedList[self.CoordinateToCell (self.x[i], self.y[i], self.z[i])]]
 
 
    def ClustereVerletlist(self):
@@ -151,7 +153,7 @@ class Cluster:
 
       self.ReadFile (filename)
       self.DetermineExtrema ()
-      self.ShiftPosition ()
+      self.ShiftPositions ()
       self.InitList ()
       self.BuildLinkedlist ()
 
