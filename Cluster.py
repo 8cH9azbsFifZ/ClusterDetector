@@ -144,6 +144,7 @@ class Cluster:
                      for k in self.LinkedList[self.CoordinateToCell (self.x[j], self.y[j], self.z[j])]:
                         if k % 10000 == 0:
                            print k,
+                           sys.stdout.flush()
                         RSq = SqDist(self.x[j], self.x[k]) + SqDist(self.y[j], self.y[k]) + SqDist(self.z[j], self.z[k])
                         if RSq <= self.RcClusterSq:
                             Lk = self.List[k]
