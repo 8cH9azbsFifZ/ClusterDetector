@@ -622,8 +622,8 @@ void ReadHDF (char *filename, unsigned int *n, float **x, float **y, float **z) 
    H5TBread_fields_name (hdf, src, field, start, 0, type_size[0],  field_offsets, field_sizes, dst_buf);
 
    void *ptr = dst_buf;
-   for (i = 0; i < fidx; i++)
-      ptr += field_sizes[i];
+//   for (i = 0; i < fidx; i++)
+  //    ptr += field_sizes[i];
 
    float *variable1 = (float *) ptr;
 

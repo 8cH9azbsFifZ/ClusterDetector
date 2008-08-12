@@ -19,7 +19,7 @@
 
 */
 
-
+#include <Python.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -27,19 +27,7 @@
 #include <unistd.h>
 #include <stdarg.h>
 #include <string.h>
-#include <string.h>
-
-#include "H5LT.h"
-#include "H5TA.h"
-#include <hdf5.h>
-#undef MAX
-#undef MIN
-
-
-int getopt(int argc, char * const argv[], const char *optstring);
-extern char *optarg;
-extern int optind, opterr, optopt;
-FILE *popen(const char *command, const char *type);
+#include "Numeric/arrayobject.h"
 
 
 #define EOK 0
@@ -73,7 +61,6 @@ FILE *popen(const char *command, const char *type);
 #define CLK 100000.
 
 #define SQ(a) ((a)*(a))
-#define PROGRESS(n) if (n % 1000 == 0) llog (" %d", n)
 
 /* --------------------------------------------------------------------------------------------- */
 
@@ -93,16 +80,6 @@ float min[3], max[3];
 
 /* --------------------------------------------------------------------------------------------- */
 
-void llog (const char *format, ...) {
-   va_list arg;
-   va_start (arg, format);
-   vfprintf (stderr, format, arg);
-   fflush (stderr);
-   va_end (arg);
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
 double SqDist (double pos1, double pos2, int dim) {
    if (Periodic[dim] == TRUE)
       return SQ( fmod(pos1-pos2,Length[dim]) );
@@ -113,7 +90,6 @@ double SqDist (double pos1, double pos2, int dim) {
 /* --------------------------------------------------------------------------------------------- */
 
 void DetermineBoxLength (unsigned int n, float *x, float *y, float *z, float *lx, float *ly, float *lz) {
-   llog ("\n\tDetermining box length: ");
    min[X] = min[Y] = min[Z] = MAGIC_MIN;
    max[X] = max[Y] = max[Z] = MAGIC_MAX;
    unsigned int i;
@@ -147,7 +123,6 @@ void DetermineBoxLength (unsigned int n, float *x, float *y, float *z, float *lx
    }
                   
    if (ShiftFlag) {
-      llog ("\n\tShifting atoms by %f %f %f", off[X], off[Y], off[Z]);
       for (i = 0; i < n; i++) {
          x[i] += off[X];
          y[i] += off[Y];
@@ -163,7 +138,6 @@ void DetermineBoxLength (unsigned int n, float *x, float *y, float *z, float *lx
    *(lx) = max[X] - min[X];
    *(ly) = max[Y] - min[Y];
    *(lz) = max[Z] - min[Z];
-   llog ("\n\tBox dimensions: %f %f %f %f %f %f", min[X], max[X], min[Y], max[Y], min[Z], max[Z]);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -182,7 +156,6 @@ void LinkedListInsert (unsigned int particle, t_linkedlist **list) {
 void LinkedListPrint (t_linkedlist *list) {
    t_linkedlist *ptr = list;
    while (ptr != NULL) {
-      llog ("%ld ", ptr->particle);
       ptr = ptr->next;
    }
 }
@@ -193,7 +166,6 @@ void LinkedListPrint (t_linkedlist *list) {
 
 
 int *BuildLinkedList (int n, float *x, float *y, float *z, float RcNeighbor) {
-   llog ("\nBuilding cell list...");
    unsigned int i;
 
    float CellSize = RcNeighbor; 
@@ -210,11 +182,9 @@ int *BuildLinkedList (int n, float *x, float *y, float *z, float RcNeighbor) {
    CellLengthI[Y] = (float)NCellSide[Y] / Length[Y];
    CellLengthI[Z] = (float)NCellSide[Z] / Length[Z];
 
-   llog ("\n\tNcells: %d %d %d -> %d    CellSize: %f   CellLength: %f %f %f", 
       NCellSide[X], NCellSide[Y], NCellSide[Z], NCell, CellSize, CellLength[X], CellLength[Y], CellLength[Z]);
 
    CellList = (t_linkedlist **) calloc (NCell, sizeof (t_linkedlist));
-   llog ("\n\tMemory: %fMB", (sizeof (t_linkedlist)*NCell+n*sizeof (unsigned int))/1024./1024.);
    
    for (i = 0; i < n; i++) 
       LinkedListInsert (i, CellList + CoordinateToCell (x[i], y[i], z[i]) );
@@ -225,14 +195,12 @@ int *BuildLinkedList (int n, float *x, float *y, float *z, float RcNeighbor) {
 /* --------------------------------------------------------------------------------------------- */
 
 int *BuildNeighborList (int n, float *x, float *y, float *z, float RcNeighbor) {
-   llog ("\nBuilding neighbor list...");
    return BuildLinkedList (n, x, y, z, RcNeighbor);
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
 void MoleculeListNeighborLinkedList (int Atoms, float *x, float *y, float *z, float RcClusterSq) {
-   llog ("\nBegin clustering...");
    double start = clock();
    
    float z0=0.0;
@@ -247,16 +215,13 @@ void MoleculeListNeighborLinkedList (int Atoms, float *x, float *y, float *z, fl
    int *Spectrum = (int *) calloc (Atoms+1, sizeof (int));
    if (!List || !Spectrum)
       exit (EMEM);
-   llog ("\n\t-> %fMB memory\n", (double) (sizeof (t_linkedlist)*Atoms + sizeof (int)*(Atoms+1))/1024./1024. );
    
    for (i = 0; i < Atoms; i++) {
       List[i]->particle = i;
       List[i]->next = List[i];
    }
-   llog ("\n\tstart");
    #define NOT_YET_CLUSTERED(i) (List[i] == List[i]->next)
    for (i = 0; i < Atoms; i++) {
-      PROGRESS(i);
       if (NOT_YET_CLUSTERED(i)) {
          // set j
          j = i; 
@@ -294,13 +259,11 @@ void MoleculeListNeighborLinkedList (int Atoms, float *x, float *y, float *z, fl
             // set j
             j = List[j]->next->particle;
 
-            PROGRESS(j);
          }  while (i != j);
       }  /* if i */
    }  /* for i */
    
    double stop = clock();
-   llog ("\n\tfinished in %.1f seconds", (stop-start)/CLK);
 /*
    for (i = 0; i < Atoms+1; i++) 
       Spectrum[i] = 0;
@@ -328,7 +291,6 @@ void MoleculeListNeighborLinkedList (int Atoms, float *x, float *y, float *z, fl
 /* --------------------------------------------------------------------------------------------- */
 
 void MoleculeListNeighbor (int Atoms, float *x, float *y, float *z, float RcClusterSq) {
-   llog ("\nBegin clustering...");
    double start = clock();
    
    float z0=0.0;
@@ -343,7 +305,6 @@ void MoleculeListNeighbor (int Atoms, float *x, float *y, float *z, float RcClus
    Spectrum = (INT *) malloc (sizeof (INT) * Atoms+1);
    if (!List || !Spectrum)
       exit (EMEM);
-   llog ("\n\t-> %fMB memory\n", (double) (sizeof (INT)*(Atoms*2+1))/1024./1024. );
 
    for (i = 0; i < Atoms; i++)  
       List[i] = i;
@@ -391,7 +352,6 @@ void MoleculeListNeighbor (int Atoms, float *x, float *y, float *z, float RcClus
    }  /* for i */
    
    double stop = clock();
-   llog ("\n\tfinished in %.1f seconds", (stop-start)/CLK);
 
    for (i = 0; i < Atoms+1; i++) 
       Spectrum[i] = 0;
@@ -418,7 +378,6 @@ void MoleculeListNeighbor (int Atoms, float *x, float *y, float *z, float RcClus
 /* --------------------------------------------------------------------------------------------- */
 
 void MoleculeList (int Atoms, float *x, float *y, float *z, float RcClusterSq) {
-   llog ("\nBegin clustering...");
    double start = clock();
    
    FLOAT     Xj, Yj, Zj, RSq, z0=0.0;
@@ -429,7 +388,6 @@ void MoleculeList (int Atoms, float *x, float *y, float *z, float RcClusterSq) {
    Spectrum = (INT *) malloc (sizeof (INT) * Atoms+1);
    if (!List || !Spectrum)
       exit (EMEM);
-   llog ("\n\t-> %fMB memory\n", (double) (sizeof (INT)*(Atoms*2+1))/1024./1024. );
 
    for (i = 0; i < Atoms; i++)  
       List[i] = i;
@@ -453,7 +411,6 @@ void MoleculeList (int Atoms, float *x, float *y, float *z, float RcClusterSq) {
    }  /* for i */
    
    double stop = clock();
-   llog ("\n\tfinished in %.1f seconds", (stop-start)/CLK);
 
    for (i = 0; i < Atoms+1; i++) 
       Spectrum[i] = 0;
@@ -479,209 +436,28 @@ void MoleculeList (int Atoms, float *x, float *y, float *z, float RcClusterSq) {
 
 /* --------------------------------------------------------------------------------------------- */
 
-void ParseArgs (int argc, char *argv[], float *rcut, unsigned int *Neighborlist, float *RcNeighbor, 
-      unsigned int *LinkedList, unsigned int *FileFlag, char **filename) {
-   int opt;
-   while ((opt = getopt(argc, argv, "h:r:nlf:XYZ")) != -1) {
-      switch (opt) {
-         case 'h': printf (USAGE); break;
-         case 'r': *rcut = (float) atof (optarg); break;
-         case 'n': *Neighborlist = TRUE; /**RcNeighbor = (float) atof (optarg); */break;
-         case 'l': *LinkedList = TRUE; break;
-         case 'f': *filename = optarg; *FileFlag = TRUE; break;
-         case 'X': Periodic[X] = TRUE; break;
-         case 'Y': Periodic[Y] = TRUE; break;
-         case 'Z': Periodic[Z] = TRUE; break;
-         default:  printf (USAGE); break;
-      }
-   }
-   llog ("\n\tPeriodicity: %d %d %d", Periodic[X], Periodic[Y], Periodic[Z]);
+static PyObject * clusterdetector(PyObject *self, PyObject *args) {
+   PyArrayObject *array;
+   double sum;
+   int i, n;
+
+   n = array->dimensions[0]
+      if ( n> array->dimensions[1])
+         n = array->dimensions[1];
+   sum = 0.;
+   for (i = 0; i < n; i++) 
+      sum  += *(double *)(array->data + i*array->strides[0] + i*array->strides[1]);
+
+   return  PyFloat_FromDouble (sum);
 }
 
-/* --------------------------------------------------------------------------------------------- */
 
-void ReadStdin (unsigned int *n, float **x, float **y, float **z) {
-   unsigned int i, ret;
-   double start = clock();
-   llog ("\nReading from stdin...");
-   llog ("\n\tExpecting (x, y, z)");
-   *n = 0;
-   *x = NULL;
-   *y = NULL;
-   *z = NULL;
-   float tmp;
-   do {
-      *n += 1;
-      PROGRESS(*n);
-      i = *n-1;
-      *x = (float *) realloc (*x, *n*sizeof (float));
-      *y = (float *) realloc (*y, *n*sizeof (float));
-      *z = (float *) realloc (*z, *n*sizeof (float));
-      if (!*x || !*y || !*z)
-         exit (EMEM);
-      ret = scanf ("%f %f %f\n", &((*x)[i]), &((*y)[i]), &((*z)[i]));
-      fflush(stdin);
-   } while (ret != EOF);
-   *n -= 1;
-   double stop = clock();
-   llog ("\n\tread %d atoms -> memory %gMB in %.1f seconds", *n, (3* *n *sizeof (float))/(1024.*1024.), (stop-start)/CLK);
-}
+static struct PyMethodDef cluster_methods[] = {
+   {"clusterdetector", clusterdetector, 1},
+   {NULL, NULL}
+};
 
-/* --------------------------------------------------------------------------------------------- */
-
-void ReadFile (char *filename, unsigned int *n, float **x, float **y, float **z) {
-   unsigned int i, ret;
-   double start = clock ();
-   llog ("\nReading from %s...", filename);
-   llog ("\n\tExpecting (x, y, z)");
-   *n = 0;
-   *x = NULL;
-   *y = NULL;
-   *z = NULL;
-   float tmp;
-   FILE *in = fopen (filename, "r");
-
-   char command[2048];
-   sprintf (command, "cat %s | awk '{n++}END{print n}'", filename);
-   llog ("\n\tUsing %s", command);
-   FILE *pipe = popen (command, "r");
-   if (!pipe) 
-      exit (EFILE);
-   char pos[1024];
-   fgets (pos, sizeof(pos), pipe);
-   fclose (pipe);
-   unsigned int lines = (unsigned int) atoi (pos);
-   llog ("\n\tWilling to read %d lines", lines);
-
-   if (!in)
-      exit (EFILE);
-   do {
-      *n += 1;
-      PROGRESS(*n);
-      i = *n-1;
-      *x = (float *) realloc (*x, *n*sizeof (float));
-      *y = (float *) realloc (*y, *n*sizeof (float));
-      *z = (float *) realloc (*z, *n*sizeof (float));
-      if (!*x || !*y || !*z)
-         exit (EMEM);
-//      ret = fscanf (in, "%f %f %f %f\n", &((*x)[i]), &((*y)[i]), &((*z)[i]), &tmp);
-      ret = fscanf (in, "%f %f %f\n", &((*x)[i]), &((*y)[i]), &((*z)[i]));
-   } while (*n-1 < lines);//ret != EOF);
-   llog ("\nbreak with %d\n", ret);
-   *n -= 1;
-   fclose (in);
-   double stop = clock();
-   llog ("\n\tread %d atoms -> memory %gMB in %.1f seconds", *n, (3* *n *sizeof (float))/(1024.*1024.), (stop-start)/CLK);
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-void ReadHDF (char *filename, unsigned int *n, float **x, float **y, float **z) {
-   llog ("\nReading hdf file %s", filename);
-   char *src = "/Particles/All";
-   hid_t hdf = H5Fopen (filename, H5F_ACC_RDONLY, H5P_DEFAULT);
-   hid_t particles = H5Dopen (hdf, src);
-   hid_t type = H5Dget_type (particles);
-   hid_t size = H5Dget_space (particles);
-   hid_t plist = H5Dget_create_plist (particles);
-   
-   hsize_t nfields, nrecords;
-   H5TBget_table_info ( hdf, src, &nfields, &nrecords );
-   llog ("\thas %d fields with %d records\n", nfields, nrecords);
-
-   char **field_names = (char **)calloc (nfields, sizeof (char*));
-   int i;
-   for (i = 0; i < nfields; i++) {
-         field_names[i] = (char *)calloc (nfields, sizeof (char[256]));
-   }
-   size_t *field_sizes = (size_t *)calloc (nfields, sizeof (size_t)),
-          *field_offsets = (size_t *)calloc (nfields, sizeof (size_t)),
-          *type_size = (size_t *)calloc (nfields, sizeof (size_t));
-
-   H5TBget_field_info (hdf, src, field_names, field_sizes, field_offsets, type_size);
-   for (i = 0; i < nfields; i++)
-      llog ("\t-> %s {%d}\n", field_names[i], field_sizes[i], field_offsets[i], type_size[i]);
-  
-   size_t total = 0;
-   for (i = 0; i < nfields; i++)
-      total += field_sizes[i];
-   llog ("\ntotal size:%d\n", total);
-
-   void *dst_buf = NULL;//calloc (10, total);
-   
-   hsize_t start = 0, nn = 1;
-   char *field = "x";
-   int fidx = -1;
-   for (i = 0; i < nfields; i++) {
-      if (strcmp (field_names[i], field) == 0) {
-         fidx = i;
-      }
-   }
-//   H5TBread_records (hdf, src, start, nn, type_size[0], field_offsets, field_sizes, dst_buf);
-   dst_buf = calloc (nn, sizeof(float)); 
-   H5TBread_fields_name (hdf, src, field, start, 0, type_size[0],  field_offsets, field_sizes, dst_buf);
-
-   void *ptr = dst_buf;
-   for (i = 0; i < fidx; i++)
-      ptr += field_sizes[i];
-
-   float *variable1 = (float *) ptr;
-
-   llog ("\ndone\n");
-   //printf ("\nok data:\n");
-   //for (i = 0; i < nfields; i++)
-   //   printf ("%f ", dst_buf[i]);
-   hid_t x1 = H5Tcreate (H5T_COMPOUND, sizeof (float));
-//   H5Tinsert (x1, "x", HOFFSET(x1,
-//   H5Dread (particles,  
-   
-//   H5TBread_table (hdf, "/Particles/All", type_size[0], field_offsets, field_sizes, dst_buf);
-
-//   HD5read (particles, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, dst_buf);
-   
-   H5Dclose (particles);
-   H5Fclose (hdf);
-   exit (0);
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-int main (int argc, char *argv[]) {
-   unsigned int n;
-   float *x, *y, *z;
-
-   float RcClusterSq, RcCluster = 0.;
-   float RcNeighbor = 0;
-   unsigned int Neighborlist = FALSE,
-      LinkedList = FALSE;
-
-   unsigned int FileFlag = FALSE;
-   char *filename[1024];
-   Periodic[X] = Periodic[Y] = Periodic [Z] = FALSE;
-
-   ParseArgs (argc, argv, &RcCluster, &Neighborlist, &RcNeighbor, &LinkedList, &FileFlag, filename);
-
-   if (RcCluster == 0.) 
-      exit (ESYN);
-   else
-      RcClusterSq = SQ(RcCluster);
-   
-   if (!FileFlag)
-      ReadStdin (&n, &x, &y, &z);
-   else
-      ReadHDF (*filename, &n, &x, &y, &z);
-   
-   DetermineBoxLength (n, x, y, z, &(Length[X]), &(Length[Y]), &(Length[Z]));
-
-   if (Neighborlist) {
-      RcNeighbor = RcCluster;
-      BuildNeighborList (n, x, y, z, RcNeighbor);
-      if (LinkedList) 
-         MoleculeListNeighborLinkedList (n, x, y, z, RcClusterSq);
-      else 
-         MoleculeListNeighbor (n, x, y, z, RcClusterSq);
-   } else 
-      MoleculeList (n, x, y, z, RcClusterSq);
-
-   return EOK;
+PyMODINIT_FUNC initcluster (void) {
+   (void) Py_InitModule ("cluster", cluster_methods);
+//   import_array ();
 }
