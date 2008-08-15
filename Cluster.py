@@ -4,6 +4,8 @@ import tables, numpy
 
 import cluster
 
+c=cluster
+print c.clusterdetector()
 
 
 

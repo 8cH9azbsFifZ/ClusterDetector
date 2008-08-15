@@ -431,20 +431,20 @@ void MoleculeList (int Atoms, float *x, float *y, float *z, float RcClusterSq) {
 /* --------------------------------------------------------------------------------------------- */
 
 static PyObject * clusterdetector(PyObject *self, PyObject *args) {
-   PyArrayObject *array;
-   double sum;
-   int i, n;
+ //  PyArrayObject *array;
+//   double sum;
+  // int i, n;
 
-   n = array->dimensions[0];
+//   n = array->dimensions[0];
 //      if ( n> array->dimensions[1])
 //         n = array->dimensions[1];
-   sum = 0.;
+   //sum = 0.;
 
-   printf ("\n%d", n);
+  // printf ("\n%d", n);
 //   for (i = 0; i < n; i++) 
 //      sum  += *(double *)(array->data + i*array->strides[0] + i*array->strides[1]);
 
-   return  PyFloat_FromDouble (sum);
+   return  PyFloat_FromDouble (0.);
 }
 
 
