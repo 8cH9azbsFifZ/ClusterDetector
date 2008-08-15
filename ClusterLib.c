@@ -431,7 +431,20 @@ void MoleculeList (int Atoms, float *x, float *y, float *z, float RcClusterSq) {
 /* --------------------------------------------------------------------------------------------- */
 
 static PyObject * clusterdetector(PyObject *self, PyObject *args) {
- //  PyArrayObject *array;
+   PyObject *input;
+   PyArrayObject *array;
+
+   if (!PyArg_ParseTuple (args, "O", &input))
+      return NULL;
+
+   array = (PyArrayObject *)PyArray_ContiguousFromObject (input, PyArray_DOUBLE, 2, 2);
+   
+   if (array->nd != 3) {// || array->descr->type_num != PyArray_DOUBLE) {
+      PyErr_SetString (PyExc_ValueError, "array has to be 3d and float");
+      return NULL;
+   }
+
+   Py_DECREF (array);
 //   double sum;
   // int i, n;
 

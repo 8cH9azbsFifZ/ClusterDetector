@@ -5,8 +5,10 @@ import tables, numpy
 import cluster
 
 c=cluster
-print c.clusterdetector()
 
+a=numpy.array([1,2,3])
+
+print c.clusterdetector(a)
 
 
 #filename = sys.argv[1]
