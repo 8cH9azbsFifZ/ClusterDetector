@@ -2,7 +2,12 @@
 import sys, os
 import tables, numpy
 
-filename = sys.argv[1]
+import cluster
+
+
+
+
+#filename = sys.argv[1]
 
 
 
@@ -189,4 +194,4 @@ class Cluster:
       self.Spectrum ()
 
 
-c = Cluster(3.615, filename)
+#c = Cluster(3.615, filename)

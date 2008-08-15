@@ -182,8 +182,6 @@ int *BuildLinkedList (int n, float *x, float *y, float *z, float RcNeighbor) {
    CellLengthI[Y] = (float)NCellSide[Y] / Length[Y];
    CellLengthI[Z] = (float)NCellSide[Z] / Length[Z];
 
-      NCellSide[X], NCellSide[Y], NCellSide[Z], NCell, CellSize, CellLength[X], CellLength[Y], CellLength[Z]);
-
    CellList = (t_linkedlist **) calloc (NCell, sizeof (t_linkedlist));
    
    for (i = 0; i < n; i++) 
@@ -311,7 +309,6 @@ void MoleculeListNeighbor (int Atoms, float *x, float *y, float *z, float RcClus
 
    #define NOT_YET_CLUSTERED(i) (i ==  List[i])
    for (i = 0; i < Atoms; i++) {
-      PROGRESS(i);
       if (NOT_YET_CLUSTERED(i)) {
          // set j
          j = i; 
@@ -346,7 +343,6 @@ void MoleculeListNeighbor (int Atoms, float *x, float *y, float *z, float RcClus
             // set j
             j = List[j];
 
-            PROGRESS(j);
          }  while (i != j);
       }  /* if i */
    }  /* for i */
@@ -393,7 +389,6 @@ void MoleculeList (int Atoms, float *x, float *y, float *z, float RcClusterSq) {
       List[i] = i;
 
    for (i = 0; i < Atoms-1; i++) {
-      PROGRESS(i);
       if (i == List[i]) {
          j = i;  Xj = x[j];  Yj = y[j];  Zj = z[j];
          do {
@@ -405,7 +400,6 @@ void MoleculeList (int Atoms, float *x, float *y, float *z, float RcClusterSq) {
                }  /* if k */
             }  /* for k */
             j = List[j];  Xj = x[j];  Yj = y[j];  Zj = z[j];
-            PROGRESS(j);
          }  while (i != j);
       }  /* if i */
    }  /* for i */
@@ -441,12 +435,14 @@ static PyObject * clusterdetector(PyObject *self, PyObject *args) {
    double sum;
    int i, n;
 
-   n = array->dimensions[0]
-      if ( n> array->dimensions[1])
-         n = array->dimensions[1];
+   n = array->dimensions[0];
+//      if ( n> array->dimensions[1])
+//         n = array->dimensions[1];
    sum = 0.;
-   for (i = 0; i < n; i++) 
-      sum  += *(double *)(array->data + i*array->strides[0] + i*array->strides[1]);
+
+   printf ("\n%d", n);
+//   for (i = 0; i < n; i++) 
+//      sum  += *(double *)(array->data + i*array->strides[0] + i*array->strides[1]);
 
    return  PyFloat_FromDouble (sum);
 }
@@ -458,6 +454,6 @@ static struct PyMethodDef cluster_methods[] = {
 };
 
 PyMODINIT_FUNC initcluster (void) {
-   (void) Py_InitModule ("cluster", cluster_methods);
-//   import_array ();
+   Py_InitModule ("cluster", cluster_methods);
+   import_array ();
 }
