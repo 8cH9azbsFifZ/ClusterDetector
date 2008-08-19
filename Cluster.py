@@ -1,12 +1,14 @@
 #!/usr/bin/python
 import sys, os
 import tables, numpy
-
 import cluster
 
 c=cluster
 
-a=numpy.array([1,2,3])
+x = [1,2,3]
+y=[2,3,4]
+z=[10,10,2]
+a=numpy.array([x,y,z])
 
 print c.clusterdetector(a)
 

@@ -434,31 +434,43 @@ static PyObject * clusterdetector(PyObject *self, PyObject *args) {
    PyObject *input;
    PyArrayObject *array;
 
-#ifdef ANY   
    if (!PyArg_ParseTuple (args, "O", &input))
       return NULL;
 
-   array = (PyArrayObject *)PyArray_ContiguousFromObject (input, PyArray_DOUBLE, 2, 2);
+   array = (PyArrayObject *)PyArray_ContiguousFromObject (input, PyArray_DOUBLE, 1, 0);
    
-   if (array->nd != 3) {// || array->descr->type_num != PyArray_DOUBLE) {
+/*   if (array->nd != 3) {// || array->descr->type_num != PyArray_DOUBLE) {
       PyErr_SetString (PyExc_ValueError, "array has to be 3d and float");
       return NULL;
    }
+*/
+   int n = array->dimensions[0];
+   int i;
+
+   printf ("array:\n");
+   for (i = 0; i < n; i++)
+      printf ("%d %f %f", i, *(double *)(array->data+i*array->strides[0]),1.);
+
 
    Py_DECREF (array);
+
+#ifdef stex
+   double sum;
+   int i, n;
+
+   n = array->dimensions[0];
+      if ( n> array->dimensions[1])
+         n = array->dimensions[1];
+   sum = 0.;
+
+   printf ("\n%d", n);
+   for (i = 0; i < n; i++) 
+      sum  += *(double *)(array->data + i*array->strides[0] + i*array->strides[1]);
 #endif
-//   double sum;
-  // int i, n;
-
-//   n = array->dimensions[0];
-//      if ( n> array->dimensions[1])
-//         n = array->dimensions[1];
-   //sum = 0.;
-
-  // printf ("\n%d", n);
-//   for (i = 0; i < n; i++) 
-//      sum  += *(double *)(array->data + i*array->strides[0] + i*array->strides[1]);
-
+/*
+   if (!PyArg_ParseTuple (args, "O!", &PyArray_Type, &array))
+      return NULL;
+*/
    return  PyFloat_FromDouble (0.1);
 }
 
