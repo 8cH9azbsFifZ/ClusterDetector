@@ -3,11 +3,15 @@ import sys, os
 import tables, numpy
 import cluster
 
+import hdf
+
+hh=hdf.hdf("dump.test.h5")
+
 c=cluster
 
-x = [1,2,3,1,2,3,4,10]
-y = [2,3,4,2,3,4,5,3]
-z = [1,1,2,5,2,5,7,11]
+x = hh.particles.All.read()["x"]
+y = hh.particles.All.read()["y"]
+z = hh.particles.All.read()["z"]
 
 print c.clusterdetector(x,y,z,3.615*2.)
 
