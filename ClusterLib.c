@@ -89,6 +89,7 @@ double SqDist (double pos1, double pos2, int dim) {
 /* --------------------------------------------------------------------------------------------- */
 
 void DetermineBoxLength (unsigned int n, float *x, float *y, float *z, float *lx, float *ly, float *lz) {
+   printf ("Determine boxlength\n");
    min[X] = min[Y] = min[Z] = MAGIC_MIN;
    max[X] = max[Y] = max[Z] = MAGIC_MAX;
    unsigned int i;
@@ -165,6 +166,7 @@ void LinkedListPrint (t_linkedlist *list) {
 
 
 int *BuildLinkedList (int n, float *x, float *y, float *z, float RcNeighbor) {
+   printf ("Build linked list\n");
    unsigned int i;
 
    float CellSize = RcNeighbor; 
@@ -192,12 +194,14 @@ int *BuildLinkedList (int n, float *x, float *y, float *z, float RcNeighbor) {
 /* --------------------------------------------------------------------------------------------- */
 
 int *BuildNeighborList (int n, float *x, float *y, float *z, float RcNeighbor) {
+   printf ("Build neighbos list\n");
    return BuildLinkedList (n, x, y, z, RcNeighbor);
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
 void MoleculeListNeighborLinkedList (int Atoms, float *x, float *y, float *z, float RcClusterSq) {
+   printf ("Clustering: linked list\n");
    double start = clock();
    
    float z0=0.0;
@@ -288,6 +292,7 @@ void MoleculeListNeighborLinkedList (int Atoms, float *x, float *y, float *z, fl
 /* --------------------------------------------------------------------------------------------- */
 
 void MoleculeListNeighbor (int Atoms, float *x, float *y, float *z, float RcClusterSq) {
+   printf ("Clustering: neighbor list\n");
    double start = clock();
    
    float z0=0.0;
@@ -373,6 +378,7 @@ void MoleculeListNeighbor (int Atoms, float *x, float *y, float *z, float RcClus
 /* --------------------------------------------------------------------------------------------- */
 
 void MoleculeList (int Atoms, float *x, float *y, float *z, float RcClusterSq) {
+   printf ("Clustering\n");
    double start = clock();
    
    FLOAT     Xj, Yj, Zj, RSq, z0=0.0;
@@ -433,8 +439,9 @@ static PyObject * clusterdetector(PyObject *self, PyObject *args) {
    PyObject *inx, *iny, *inz;
    PyArrayObject *xx, *yy, *zz;
    double rcut;
+   int list = 0;
 
-   if (!PyArg_ParseTuple (args, "OOOd", &inx, &iny, &inz, &rcut))
+   if (!PyArg_ParseTuple (args, "OOOd|i", &inx, &iny, &inz, &rcut, &list))
       return NULL;
 
    xx = (PyArrayObject *)PyArray_ContiguousFromObject (inx, PyArray_DOUBLE, 1, 0);
@@ -459,8 +466,14 @@ static PyObject * clusterdetector(PyObject *self, PyObject *args) {
    float RcClusterSq, RcCluster = 0.;
    float RcNeighbor = 0;
    RcNeighbor = RcCluster;
-   BuildNeighborList (n, x, y, z, RcNeighbor);
-//   MoleculeListNeighborLinkedList (n, x, y, z, RcClusterSq);
+
+   if (list != 0) {
+      BuildNeighborList (n, x, y, z, RcNeighbor);
+      MoleculeListNeighbor (n, x, y, z, RcClusterSq);
+   } else {
+      MoleculeList (n, x, y, z, RcClusterSq);
+   }
+
 
    Py_DECREF (xx);
    Py_DECREF (yy);
