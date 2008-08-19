@@ -431,52 +431,36 @@ void MoleculeList (int Atoms, float *x, float *y, float *z, float RcClusterSq) {
 /* --------------------------------------------------------------------------------------------- */
 
 static PyObject * clusterdetector(PyObject *self, PyObject *args) {
-   PyObject *input;
-   PyArrayObject *array;
+   PyObject *inx, *iny, *inz;
+   PyArrayObject *x, *y, *z;
 
-   if (!PyArg_ParseTuple (args, "O", &input))
+   if (!PyArg_ParseTuple (args, "OOO", &inx, &iny, &inz))
       return NULL;
 
-   array = (PyArrayObject *)PyArray_ContiguousFromObject (input, PyArray_DOUBLE, 1, 0);
+   x = (PyArrayObject *)PyArray_ContiguousFromObject (inx, PyArray_DOUBLE, 1, 0);
+   y = (PyArrayObject *)PyArray_ContiguousFromObject (iny, PyArray_DOUBLE, 1, 0);
+   z = (PyArrayObject *)PyArray_ContiguousFromObject (inz, PyArray_DOUBLE, 1, 0);
    
-/*   if (array->nd != 3) {// || array->descr->type_num != PyArray_DOUBLE) {
-      PyErr_SetString (PyExc_ValueError, "array has to be 3d and float");
-      return NULL;
-   }
-*/
-   int n = array->dimensions[0];
+   int n = x->dimensions[0];
    int i, j, k;
-   i=1;
-   j=0;
-   k=0;
-
-   printf ("%d %d %d %f\n", i, j,k, *(double *)(array->data+ i*array->strides[0] + j*array->strides[1] + k*array->strides[2] ));
-   printf ("array:\n");
+   
+   for (i =  0; i < 3; i++)
+      printf ("%d %f\n", i, *(double *)(x->data+ i*x->strides[0]));
+   for (i =  0; i < 3; i++)
+      printf ("%d %f\n", i, *(double *)(y->data+ i*y->strides[0]));
+   for (i =  0; i < 3; i++)
+      printf ("%d %f\n", i, *(double *)(y->data+ i*y->strides[0]));
+//   printf ("array:\n");
 //   for (i = 0; i < n; i++)
 //      printf ("%d %f %f %f\n", i, *(double *)(array->data+i*array->strides[0]),
 //            *(double *)(array->data+i*array->strides[1]),
 //            *(double *)(array->data+i*array->strides[2]));
 
 
-   Py_DECREF (array);
+   Py_DECREF (x);
+   Py_DECREF (y);
+   Py_DECREF (z);
 
-#ifdef stex
-   double sum;
-   int i, n;
-
-   n = array->dimensions[0];
-      if ( n> array->dimensions[1])
-         n = array->dimensions[1];
-   sum = 0.;
-
-   printf ("\n%d", n);
-   for (i = 0; i < n; i++) 
-      sum  += *(double *)(array->data + i*array->strides[0] + i*array->strides[1]);
-#endif
-/*
-   if (!PyArg_ParseTuple (args, "O!", &PyArray_Type, &array))
-      return NULL;
-*/
    return  PyFloat_FromDouble (0.1);
 }
 
