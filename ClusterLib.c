@@ -434,6 +434,7 @@ static PyObject * clusterdetector(PyObject *self, PyObject *args) {
    PyObject *input;
    PyArrayObject *array;
 
+#ifdef ANY   
    if (!PyArg_ParseTuple (args, "O", &input))
       return NULL;
 
@@ -445,6 +446,7 @@ static PyObject * clusterdetector(PyObject *self, PyObject *args) {
    }
 
    Py_DECREF (array);
+#endif
 //   double sum;
   // int i, n;
 
@@ -457,7 +459,7 @@ static PyObject * clusterdetector(PyObject *self, PyObject *args) {
 //   for (i = 0; i < n; i++) 
 //      sum  += *(double *)(array->data + i*array->strides[0] + i*array->strides[1]);
 
-   return  PyFloat_FromDouble (0.);
+   return  PyFloat_FromDouble (0.1);
 }
 
 
