@@ -445,11 +445,17 @@ static PyObject * clusterdetector(PyObject *self, PyObject *args) {
    }
 */
    int n = array->dimensions[0];
-   int i;
+   int i, j, k;
+   i=0;
+   j=0;
+   k=0;
 
+   printf ("%d %d %d %f\n", i, j,k, *(double *)(array->data+ i*array->strides[0] + j*array->strides[1] + k*array->strides[2] ));
    printf ("array:\n");
-   for (i = 0; i < n; i++)
-      printf ("%d %f %f", i, *(double *)(array->data+i*array->strides[0]),1.);
+//   for (i = 0; i < n; i++)
+//      printf ("%d %f %f %f\n", i, *(double *)(array->data+i*array->strides[0]),
+//            *(double *)(array->data+i*array->strides[1]),
+//            *(double *)(array->data+i*array->strides[2]));
 
 
    Py_DECREF (array);
