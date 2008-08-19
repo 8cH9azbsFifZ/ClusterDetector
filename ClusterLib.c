@@ -13,7 +13,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
     (C)opyright   Gerolf Ziegenhain 2008 <gerolf@ziegenhain.com>
-                  Christian Anders 2008 <anders@physik.uni-kl.de>
 
     Based on the algorithm in S. Stoddard JCP(1978)27:291
 
@@ -432,33 +431,42 @@ void MoleculeList (int Atoms, float *x, float *y, float *z, float RcClusterSq) {
 
 static PyObject * clusterdetector(PyObject *self, PyObject *args) {
    PyObject *inx, *iny, *inz;
-   PyArrayObject *x, *y, *z;
+   PyArrayObject *xx, *yy, *zz;
    double rcut;
 
    if (!PyArg_ParseTuple (args, "OOOd", &inx, &iny, &inz, &rcut))
       return NULL;
 
-   x = (PyArrayObject *)PyArray_ContiguousFromObject (inx, PyArray_DOUBLE, 1, 0);
-   y = (PyArrayObject *)PyArray_ContiguousFromObject (iny, PyArray_DOUBLE, 1, 0);
-   z = (PyArrayObject *)PyArray_ContiguousFromObject (inz, PyArray_DOUBLE, 1, 0);
+   xx = (PyArrayObject *)PyArray_ContiguousFromObject (inx, PyArray_DOUBLE, 1, 0);
+   yy = (PyArrayObject *)PyArray_ContiguousFromObject (iny, PyArray_DOUBLE, 1, 0);
+   zz = (PyArrayObject *)PyArray_ContiguousFromObject (inz, PyArray_DOUBLE, 1, 0);
+
+   int n = xx->dimensions[0];
    
-   int n = x->dimensions[0];
-   int i, j, k;
+   float *x = (float *) calloc (n, sizeof (float));
+   float *y = (float *) calloc (n, sizeof (float));
+   float *z = (float *) calloc (n, sizeof (float));
+
+   int i;
+   for (i=0;i <n;i++) {
+      x[i] = (float)*(double*) (xx->data+i*xx->strides[0]);
+      y[i] = (float)*(double*) (yy->data+i*yy->strides[0]);
+      z[i] = (float)*(double*) (zz->data+i*zz->strides[0]);
+   }
    
-   printf ("%f\n", rcut);
-   for (i =  0; i < 3; i++)
-      printf ("%d %f\n", i, *(double *)(x->data+ i*x->strides[0]));
-   for (i =  0; i < 3; i++)
-      printf ("%d %f\n", i, *(double *)(y->data+ i*y->strides[0]));
-   for (i =  0; i < 3; i++)
-      printf ("%d %f\n", i, *(double *)(z->data+ i*z->strides[0]));
+   DetermineBoxLength (n, x, y, z, &(Length[X]), &(Length[Y]), &(Length[Z]));
 
+   float RcClusterSq, RcCluster = 0.;
+   float RcNeighbor = 0;
+   RcNeighbor = RcCluster;
+   BuildNeighborList (n, x, y, z, RcNeighbor);
+//   MoleculeListNeighborLinkedList (n, x, y, z, RcClusterSq);
 
-   Py_DECREF (x);
-   Py_DECREF (y);
-   Py_DECREF (z);
+   Py_DECREF (xx);
+   Py_DECREF (yy);
+   Py_DECREF (zz);
 
-   return  PyFloat_FromDouble (0.1);
+   return  PyFloat_FromDouble (Length[Z]);
 }
 
 
