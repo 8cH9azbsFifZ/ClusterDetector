@@ -446,7 +446,7 @@ static PyObject * clusterdetector(PyObject *self, PyObject *args) {
 */
    int n = array->dimensions[0];
    int i, j, k;
-   i=0;
+   i=1;
    j=0;
    k=0;
 
