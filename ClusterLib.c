@@ -449,7 +449,7 @@ static PyObject * clusterdetector(PyObject *self, PyObject *args) {
    for (i =  0; i < 3; i++)
       printf ("%d %f\n", i, *(double *)(y->data+ i*y->strides[0]));
    for (i =  0; i < 3; i++)
-      printf ("%d %f\n", i, *(double *)(y->data+ i*y->strides[0]));
+      printf ("%d %f\n", i, *(double *)(z->data+ i*z->strides[0]));
 //   printf ("array:\n");
 //   for (i = 0; i < n; i++)
 //      printf ("%d %f %f %f\n", i, *(double *)(array->data+i*array->strides[0]),
