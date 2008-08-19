@@ -9,7 +9,7 @@ x = [1,2,3]
 y=[2,3,4]
 z=[10,10,2]
 
-print c.clusterdetector(x,y,z)
+print c.clusterdetector(x,y,z,3.615*2.)
 
 
 #filename = sys.argv[1]

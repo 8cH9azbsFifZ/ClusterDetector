@@ -433,8 +433,9 @@ void MoleculeList (int Atoms, float *x, float *y, float *z, float RcClusterSq) {
 static PyObject * clusterdetector(PyObject *self, PyObject *args) {
    PyObject *inx, *iny, *inz;
    PyArrayObject *x, *y, *z;
+   double rcut;
 
-   if (!PyArg_ParseTuple (args, "OOO", &inx, &iny, &inz))
+   if (!PyArg_ParseTuple (args, "OOOd", &inx, &iny, &inz, &rcut))
       return NULL;
 
    x = (PyArrayObject *)PyArray_ContiguousFromObject (inx, PyArray_DOUBLE, 1, 0);
@@ -444,17 +445,13 @@ static PyObject * clusterdetector(PyObject *self, PyObject *args) {
    int n = x->dimensions[0];
    int i, j, k;
    
+   printf ("%f\n", rcut);
    for (i =  0; i < 3; i++)
       printf ("%d %f\n", i, *(double *)(x->data+ i*x->strides[0]));
    for (i =  0; i < 3; i++)
       printf ("%d %f\n", i, *(double *)(y->data+ i*y->strides[0]));
    for (i =  0; i < 3; i++)
       printf ("%d %f\n", i, *(double *)(z->data+ i*z->strides[0]));
-//   printf ("array:\n");
-//   for (i = 0; i < n; i++)
-//      printf ("%d %f %f %f\n", i, *(double *)(array->data+i*array->strides[0]),
-//            *(double *)(array->data+i*array->strides[1]),
-//            *(double *)(array->data+i*array->strides[2]));
 
 
    Py_DECREF (x);
