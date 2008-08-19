@@ -10,13 +10,13 @@ hh=hdf.hdf("dump.test.h5")
 
 c=cluster
 
-x = hh.particles.All.read()["x"]
-y = hh.particles.All.read()["y"]
-z = hh.particles.All.read()["z"]
+pp=hh.particles.All.readWhere("y>30")
+xx = pp["x"]
+yy = pp["y"]
+zz = pp["z"]
+x=numpy.array(xx)
+y=numpy.array(yy)
+z=numpy.array(zz)
 
-xx=numpy.array(x)
-yy=numpy.array(y)
-zz=numpy.array(z)
-
-cc=cluster.clusterdetector(xx,yy,zz,3.615*2.)
+cc=cluster.clusterdetector(x,y,z,3.615*2.)
 print cc
