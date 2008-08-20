@@ -669,7 +669,7 @@ int main (int argc, char *argv[]) {
    if (!FileFlag)
       ReadStdin (&n, &x, &y, &z);
    else
-      ReadHDF (*filename, &n, &x, &y, &z);
+      ReadFile (*filename, &n, &x, &y, &z);
    
    DetermineBoxLength (n, x, y, z, &(Length[X]), &(Length[Y]), &(Length[Z]));
 
